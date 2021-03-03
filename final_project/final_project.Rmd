@@ -6,6 +6,9 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
+  ## CHRIS' COMMENT: 
+  ## Consider removing the packages you don't use? 
+  ## But if you are going to integrate them for the final, then ignore that.
 library(lavaan)
 library(semTools)
 library(tidyverse)
@@ -33,7 +36,16 @@ covid_data <-  import(here("data", "synth_covid_data.csv"))
 
 ```{r prep_country_data, include=FALSE}
 # countries by name, not number
-countries_in_order = c("Australia","Argentina","Mexico","India","Nigeria","Egypt","China","Saudi Arabia","USA")
+countries_in_order = 
+  c("Australia",
+    "Argentina",
+    "Mexico",
+    "India",
+    "Nigeria",
+    "Egypt",
+    "China",
+    "Saudi Arabia",
+    "USA")
 
 covid_data = covid_data %>%
   mutate(country_of_residence = factor(country_of_residence, 
@@ -124,15 +136,28 @@ covid_data = covid_data %>%
 #	Visualize the relationship between trust in government and likelihood of compliance with government policies, introducing country as a third variable. I think this would work well as a line plot or scatterplot, with different countries in different colors.
 viz_1 <- covid_data %>% 
 ggplot(aes(trust, gov_comp)) +
-  geom_smooth(aes(colour = country_of_residence),
+  geom_smooth(aes(colour = 
+                    fct_reorder(country_of_residence, gov_comp)),
              size = 0.5) +
-  facet_wrap(~country_of_residence) +
+  facet_wrap(~fct_reorder(country_of_residence, gov_comp)) +
   theme_minimal() +
   scale_color_viridis_d() +
   xlab("Trust in government") +
   ylab("Compliance with government policies") +
-  labs(title = "Greater trust in government differentially predicts higher compliance")
+  labs(title = "Greater trust in government differentially predicts higher compliance",
+       color = 'Country of Residence')
 viz_1
+
+  ## CHRIS' COMMENT:
+  ## Really interesting plot, especially with how real this is right now!
+  ## Suggestions: These are really minimal, so I just added the two changes I saw:
+  ## (1) I reordered the facet_wrapping, so countries are plotted by their average 
+  ## gov_comp. (2) I also changed your color label so it wasn't the variable name
+
+  ## I love the spread in governments you have here; so often it's US-centric
+  ## I learned from you that you can change the size of the geom_smooth()
+  ## directly in the geom_smooth() call; I had a really odd way of doing it that
+  ## is way more work. I'll definitely go this route
 ```
 
 # data viz 2
@@ -141,19 +166,49 @@ viz_1
 viridis(n = 9)
 
 viz_2 <- covid_data %>% 
-  mutate(country_of_residence = fct_relevel(country_of_residence,  "Australia", "USA", "Argentina", "Saudi Arabia", "Mexico", "Egypt", "China", "Nigeria", "India")) %>%
-  ggplot(aes(prevent, country_of_residence)) +
+  mutate(country_of_residence = 
+           fct_relevel(country_of_residence,
+                       "Australia", 
+                       "USA", 
+                       "Argentina", 
+                       "Saudi Arabia", 
+                       "Mexico", 
+                       "Egypt", 
+                       "China", 
+                       "Nigeria", 
+                       "India")) %>%
+  ggplot(aes(prevent, fct_reorder(country_of_residence, prevent))) +
   ggridges::geom_density_ridges(aes(fill = country_of_residence),
                                 bandwidth = 0.6,
                                 alpha = 0.5,
                                 scale = 1.5) +
-  scale_fill_manual(values = c("#440154FF", "#472D7BFF", "#3B528BFF", "#2C728EFF", "#21908CFF", "#27AD81FF", "#5DC863FF", "#AADC32FF", "#FDE725FF")) +
+  scale_fill_manual(values = 
+                      c("#440154FF", 
+                        "#472D7BFF", 
+                        "#3B528BFF", 
+                        "#2C728EFF", 
+                        "#21908CFF", 
+                        "#27AD81FF", 
+                        "#5DC863FF", 
+                        "#AADC32FF", 
+                        "#FDE725FF")) +
   theme_minimal() +
   theme(legend.position = "none") +
   xlab("Number of preventive behaviors adopted") +
   ylab("") +
   labs(title = "Adoption of preventive behaviors by country")
 viz_2
+  
+  ## CHRIS' COMMENTS: 
+  ## Very cool plot, I like the geom_density_ridges() look a lot. 
+  ## Great use of semi-transparent plots so we don't miss the other values.
+  ## Suggestions: 
+  ## Again, these were super small so I just made them. 
+  ## (1) My first change is really not to the plot's aesthetic, per se, but 
+  ## Daniel had to tell me about not going over 80 characters/line 
+  ## a few times (and I kept doing it, haha). So I just put several 
+  ## things on new lines. (2) I did another fct_reorder(), 
+
 ```
 
 # data viz 3
@@ -202,6 +257,23 @@ viz_3_full <- heatmaply(cor_full,
         main = "Correlational heatmap of predictor variables",
         heatmap_layers = theme(axis.line=element_blank()))
 viz_3_full
+
+  ## CHRIS' COMMENTS: 
+  ## I had no idea you could do heatmaps this way, I really like how simple
+  ## your code makes it, especially when you have so many variables. Good use
+  ## of diagonal text on the x-axis. 
+  ## I'm not sure if I like the idea of all items as much as the simplified, 
+  ## diagram. But it depends if you're doing general communication or a
+  ## research based audience. The former would benefit from the simple plot, maybe?
+  ## Suggestions:
+  ## (1) I couldn't immediately figure out how to add a label to the fill, but 
+  ## I would try that. I think even though you have a title, it is still 
+  ## helpful to make sure people know. 
+  ## (2) I would consider switching the direction of the fill, such that
+  ## bright yellow was 1.00 and dark purple was 0.00. I say this just because
+  ## of how I perceive highs and lows (like brightness/presence of light), but
+  ## that could be just me. 
+
 
 ```
 
